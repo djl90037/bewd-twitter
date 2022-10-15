@@ -1,13 +1,17 @@
 class TweetsController < ApplicationController
     def index
-        @tweets = Tweet.all
+        @tweets = Tweet.all.order(created_at: :desc)
         render 'tweets/index'
     end
 
     def index_by_user
-        
-        @tweets = Tweet.find_by(username: params[:user])
-        
+        user = User.find_by(username: params[:username])
+        @tweets = Tweet.where(user_id: user.id)
+        if @tweets
+            render 'tweets/index'
+        else
+            render json: { tweets: [] }
+        end
     end
 
     def create
@@ -16,7 +20,7 @@ class TweetsController < ApplicationController
 
         if session
             @user = session.user
-            @tweet = user.tweets.new(tweet_params)
+            @tweet = @user.tweets.new(tweet_params)
 
             if @tweet.save
                 render 'tweets/create'
